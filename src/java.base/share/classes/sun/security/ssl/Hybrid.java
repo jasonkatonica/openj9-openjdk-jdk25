@@ -131,6 +131,17 @@ public class Hybrid {
             right = getKeyPairGenerator(rightAlg);
             leftSpec = getSpec(leftAlg);
             rightSpec = getSpec(rightAlg);
+            // Initialize each sub-generator immediately so that the
+            // correct algorithm parameters (e.g. the exact EC curve) are
+            // applied.
+            try {
+                left.initialize(leftSpec, null);
+                right.initialize(rightSpec, null);
+            } catch (InvalidAlgorithmParameterException e) {
+                throw new NoSuchAlgorithmException(
+                        "Failed to initialize hybrid key generators for "
+                        + leftAlg + "/" + rightAlg, e);
+            }
             if (SSLLogger.isOn && SSLLogger.isOn("ssl,handshake")) {
                 SSLLogger.finer("Hybrid KeyPairGenerator:\n"
                         + "  " + leftAlg + " is from " + left.getProvider().getName() + "\n"
