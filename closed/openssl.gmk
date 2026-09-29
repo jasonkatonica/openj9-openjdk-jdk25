@@ -73,8 +73,6 @@ endif
 
 ifeq ($(call isTargetCpu, s390x), true)
   OPENSSL_CONFIG_CFLAGS := -march=z10
-else ifeq ($(call isTargetCpu, x86_64), true)
-  OPENSSL_CONFIG_CFLAGS := -DVAES512_ELIGIBLE=0 -DVAES_CBC_ELIGIBLE=0
 else
   OPENSSL_CONFIG_CFLAGS :=
 endif
