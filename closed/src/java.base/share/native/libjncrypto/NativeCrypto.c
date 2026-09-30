@@ -647,7 +647,7 @@ load_crypto_library(jboolean traceEnabled, const char *libName)
 static void *
 find_crypto_library(jboolean traceEnabled, jboolean skipBundled, const char *chomepath)
 {
-    /* Library names for OpenSSL 3.x, 1.1.1, 1.1.0 and symbolic links:
+    /* Library names for OpenSSL 4.x, 3.x, 1.1.1, 1.1.0 and symbolic links:
      * It is important to preserve the order!!!
      *
      * Note: On macOS 11 or later, loading the general symlink causes
@@ -663,6 +663,10 @@ find_crypto_library(jboolean traceEnabled, jboolean skipBundled, const char *cho
      */
     static const char * const libNames[] = {
 #if defined(_AIX)
+        "libcrypto.a(libcrypto64.so.4)",    /* 4.x library name from archive file */
+        "libcrypto64.so.4",                 /* 4.x library name */
+        "libcrypto.a(libcrypto.so.4)",      /* 4.x library name from archive file */
+        "libcrypto.so.4",                   /* 4.x library name */
         "libcrypto.a(libcrypto64.so.3)",    /* 3.x library name from archive file */
         "libcrypto64.so.3",                 /* 3.x library name */
         "libcrypto.a(libcrypto.so.3)",      /* 3.x library name from archive file */
@@ -676,14 +680,17 @@ find_crypto_library(jboolean traceEnabled, jboolean skipBundled, const char *cho
         "libcrypto.a(libcrypto.so)",        /* general symlink library name from archive file */
         "libcrypto.so",                     /* general symlink library name */
 #elif defined(__APPLE__) /* defined(_AIX) */
+        "libcrypto.4.dylib",                /* 4.x library name */
         "libcrypto.3.dylib",                /* 3.x library name */
         "libcrypto.1.1.dylib",              /* 1.1.x library name */
         "libcrypto.1.0.0.dylib",            /* 1.0.x library name */
 #elif defined(_WIN32) /* defined(__APPLE__) */
+        "libcrypto-4-x64.dll",              /* 4.x library name */
         "libcrypto-3-x64.dll",              /* 3.x library name */
         "libcrypto-1_1-x64.dll",            /* 1.1.x library name */
         "libeay32.dll",                     /* old library name */
 #else /* defined(_WIN32) */
+        "libcrypto.so.4",                   /* 4.x library name */
         "libcrypto.so.3",                   /* 3.x library name */
         "libcrypto.so.1.1",                 /* 1.1.x library name */
         "libcrypto.so.1.0.0",               /* 1.0.x library name */
