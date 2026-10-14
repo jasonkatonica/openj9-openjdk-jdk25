@@ -62,6 +62,7 @@ public class NativeCrypto {
     public static final long OPENSSL_VERSION_1_1_0 = 0x1_01_00_000L;
     public static final long OPENSSL_VERSION_1_1_1 = 0x1_01_01_000L;
     public static final long OPENSSL_VERSION_3_0_0 = 0x3_00_00_000L;
+    public static final long OPENSSL_VERSION_4_0_0 = 0x4_00_00_000L;
 
     private static final Cleaner ECKeyCleaner = CleanerFactory.cleaner();
 

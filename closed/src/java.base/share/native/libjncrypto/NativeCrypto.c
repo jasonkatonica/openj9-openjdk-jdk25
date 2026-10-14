@@ -548,10 +548,10 @@ get_crypto_library_version(jboolean traceEnabled, void *crypto_library, const ch
         }
     } else {
         openssl_version = (*OSSL_version)(0); /* get OPENSSL_VERSION */
-        /* Ensure the OpenSSL version is "OpenSSL 1.1.x" or "OpenSSL 3.x.x". */
+        /* Ensure the OpenSSL version is "OpenSSL 1.1.x" or "OpenSSL 3.x.x and above". */
         ossl_ver = extractVersionToJlong(openssl_version);
-        if (!(((OPENSSL_VERSION_1_1_0 <= ossl_ver) && (ossl_ver < OPENSSL_VERSION_2_0_0))
-           || ((OPENSSL_VERSION_3_0_0 <= ossl_ver) && (ossl_ver < OPENSSL_VERSION_4_0_0)))
+        if (((ossl_ver < OPENSSL_VERSION_1_1_0) || (ossl_ver >= OPENSSL_VERSION_2_0_0))
+         && (ossl_ver < OPENSSL_VERSION_3_0_0)
         ) {
             if (traceEnabled) {
                 fprintf(stderr, "Error loading OpenSSL: Incompatible OpenSSL version found: %s\n", openssl_version);
