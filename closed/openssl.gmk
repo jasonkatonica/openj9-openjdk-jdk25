@@ -125,31 +125,37 @@ endif # CCACHE
 
 build_openssl :
 	@$(ECHO) Compiling OpenSSL in $(OPENSSL_DIR) for $(OPENSSL_TARGET)$(if $(OPENSSL_CONFIG_CFLAGS), with additional CFLAGS $(OPENSSL_CONFIG_CFLAGS))
-  # Diagnostics for the Jenkins log. Each command ends with "; true" so that
-  # a non-zero exit status can never fail the build.
+  # Diagnostics for the Jenkins log. The shell running recipes may have errexit
+  # (-e) set, so "cmd ; true" does not protect against a failing cmd (the shell
+  # exits before reaching true). Each command that can fail therefore ends with
+  # "|| true" so that a non-zero exit status can never fail the build, e.g.
+  # ls of a devkit directory which does not exist on s390x.
   ifeq ($(call isTargetOs, linux), true)
-	@$(ECHO) "[OPENSSL-DEBUG] devkit bin directory: $(if $(OPENSSL_DEVKIT_BIN),$(OPENSSL_DEVKIT_BIN),<none found, using system toolchain>)" ; true
-	@$(ECHO) "[OPENSSL-DEBUG] ls -la /usr/local/devkit:" ; ls -la /usr/local/devkit 2>&1 ; true
-	@$(ECHO) "[OPENSSL-DEBUG] ls -la /usr/local/devkit/gcc-14.2.0-*:" ; ls -la /usr/local/devkit/gcc-14.2.0-* 2>&1 ; true
-	@$(ECHO) "[OPENSSL-DEBUG] ls -la /usr/local/devkit/gcc-14.2.0-*/*-linux-gnu/bin:" ; ls -la /usr/local/devkit/gcc-14.2.0-*/*-linux-gnu/bin 2>&1 ; true
-	@$(ECHO) "[OPENSSL-DEBUG] PATH used by OpenSSL: $(if $(OPENSSL_DEVKIT_BIN),$(OPENSSL_DEVKIT_BIN):)$$PATH" ; true
-	@$(ECHO) "[OPENSSL-DEBUG] COMPILER_PATH used by OpenSSL: $(if $(OPENSSL_DEVKIT_BIN),$(OPENSSL_DEVKIT_BIN):)$$COMPILER_PATH" ; true
+	@$(ECHO) "[OPENSSL-DEBUG] devkit bin directory: $(if $(OPENSSL_DEVKIT_BIN),$(OPENSSL_DEVKIT_BIN),<none found, using system toolchain>)" || true
+	@$(ECHO) "[OPENSSL-DEBUG] ls -la /usr/local/devkit:" || true
+	@ls -la /usr/local/devkit 2>&1 || true
+	@$(ECHO) "[OPENSSL-DEBUG] ls -la /usr/local/devkit/gcc-14.2.0-*:" || true
+	@ls -la /usr/local/devkit/gcc-14.2.0-* 2>&1 || true
+	@$(ECHO) "[OPENSSL-DEBUG] ls -la /usr/local/devkit/gcc-14.2.0-*/*-linux-gnu/bin:" || true
+	@ls -la /usr/local/devkit/gcc-14.2.0-*/*-linux-gnu/bin 2>&1 || true
+	@$(ECHO) "[OPENSSL-DEBUG] PATH used by OpenSSL: $(if $(OPENSSL_DEVKIT_BIN),$(OPENSSL_DEVKIT_BIN):)$$PATH" || true
+	@$(ECHO) "[OPENSSL-DEBUG] COMPILER_PATH used by OpenSSL: $(if $(OPENSSL_DEVKIT_BIN),$(OPENSSL_DEVKIT_BIN):)$$COMPILER_PATH" || true
 	@for t in as ld gcc ; do \
-		$(ECHO) "[OPENSSL-DEBUG] system $$t: $$(command -v $$t 2>&1); version: $$($$t --version 2>&1 | head -n 1)" ; \
-	done ; true
+		$(ECHO) "[OPENSSL-DEBUG] system $$t: $$(command -v $$t 2>&1 || true); version: $$($$t --version 2>&1 | head -n 1 || true)" || true ; \
+	done || true
 	@for t in as ld gcc ; do \
 		if test -n '$(OPENSSL_DEVKIT_BIN)' && test -x '$(OPENSSL_DEVKIT_BIN)'/$$t ; then \
-			$(ECHO) "[OPENSSL-DEBUG] devkit $$t: $(OPENSSL_DEVKIT_BIN)/$$t; version: $$('$(OPENSSL_DEVKIT_BIN)'/$$t --version 2>&1 | head -n 1)" ; \
+			$(ECHO) "[OPENSSL-DEBUG] devkit $$t: $(OPENSSL_DEVKIT_BIN)/$$t; version: $$('$(OPENSSL_DEVKIT_BIN)'/$$t --version 2>&1 | head -n 1 || true)" || true ; \
 		else \
-			$(ECHO) "[OPENSSL-DEBUG] devkit $$t: not available" ; \
+			$(ECHO) "[OPENSSL-DEBUG] devkit $$t: not available" || true ; \
 		fi ; \
-	done ; true
+	done || true
 	@for t in as ld gcc ; do \
-		$(ECHO) "[OPENSSL-DEBUG] effective $$t: $$( $(OPENSSL_TOOLCHAIN_SETUP) command -v $$t 2>&1 )" ; \
-	done ; true
-	@$(ECHO) "[OPENSSL-DEBUG] CC=$(CC)" ; true
-	@$(ECHO) "[OPENSSL-DEBUG] ac_cv_prog_CC=$(ac_cv_prog_CC)" ; true
-	@$(ECHO) "[OPENSSL-DEBUG] OPENSSL_MAKE=$(OPENSSL_MAKE)" ; true
+		$(ECHO) "[OPENSSL-DEBUG] effective $$t: $$( $(OPENSSL_TOOLCHAIN_SETUP) command -v $$t 2>&1 || true )" || true ; \
+	done || true
+	@$(ECHO) "[OPENSSL-DEBUG] CC=$(CC)" || true
+	@$(ECHO) "[OPENSSL-DEBUG] ac_cv_prog_CC=$(ac_cv_prog_CC)" || true
+	@$(ECHO) "[OPENSSL-DEBUG] OPENSSL_MAKE=$(OPENSSL_MAKE)" || true
   endif # linux
 	( $(OPENSSL_CONFIG_SETUP) $(CD) $(OPENSSL_DIR) && $(PERL) Configure $(OPENSSL_CONFIG_CFLAGS) $(OPENSSL_TARGET) no-makedepend no-tests no-winstore shared )
 	$(OPENSSL_PATCH)
